@@ -2,10 +2,13 @@ import express from 'express'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import multer from 'multer'
-import * as UserController from './controllers/UserController.js'
-import * as PostController from './controllers/PostController.js'
+import { UserController, PostController } from './controllers/index.js'
+
+// TODO: refactor this imports
 import { registerValidation, loginValidation, postCreateValidation } from './utils/validations.js'
 import checkAuth from './utils/checkAuth.js'
+import handleValidationErrors from './utils/handleValidationErrors.js'
+
 
 dotenv.config()
 
@@ -24,7 +27,6 @@ const storage = multer.diskStorage({
     cb(null, file.originalname)
   }
 })
-
 const upload = multer({ storage })
 
 app.use(express.json())
@@ -32,8 +34,8 @@ app.use(express.json())
 app.use('/uploads', express.static('uploads'))
 
 // authorization
-app.post('/auth/login', loginValidation, UserController.login)
-app.post('/auth/register', registerValidation, UserController.register)
+app.post('/auth/login', loginValidation, handleValidationErrors, UserController.login)
+app.post('/auth/register', registerValidation, handleValidationErrors, UserController.register)
 app.get('/auth/me', checkAuth, UserController.getMe)
 
 // file upload
@@ -46,11 +48,11 @@ app.post('/uploads', checkAuth, upload.single('image'), (req, res) => {
 // posts
 app.get('/posts', PostController.getAll)
 app.get('/posts/:id', PostController.getOne)
-app.post('/posts', checkAuth, postCreateValidation, PostController.create)
+app.post('/posts', checkAuth, postCreateValidation, handleValidationErrors, PostController.create)
 app.delete('/posts/:id', checkAuth, PostController.remove)
-app.patch('/posts/:id', checkAuth, PostController.update)
+app.patch('/posts/:id', checkAuth, postCreateValidation, handleValidationErrors, PostController.update)
 
-
+// run server
 app.listen(process.env.PORT, (err) => {
   if (err) {
     return console.log('Ошибка, не удалось запустить сервер!')
