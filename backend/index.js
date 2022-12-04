@@ -1,6 +1,7 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
+import cors from 'cors'
 import multer from 'multer'
 import { UserController, PostController } from './controllers/index.js'
 
@@ -30,6 +31,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 app.use(express.json())
+app.use(cors())
 // for work /w static files
 app.use('/uploads', express.static('uploads'))
 
